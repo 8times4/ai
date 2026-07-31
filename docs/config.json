@@ -451,7 +451,8 @@
         {
           "label": "Locks",
           "to": "advanced/locks",
-          "addedAt": "2026-07-27"
+          "addedAt": "2026-07-27",
+          "updatedAt": "2026-07-28"
         },
         {
           "label": "OpenTelemetry",
@@ -513,6 +514,11 @@
           "to": "sandbox/lifecycle",
           "addedAt": "2026-06-29",
           "updatedAt": "2026-07-09"
+        },
+        {
+          "label": "Instance Durability",
+          "to": "sandbox/durability",
+          "addedAt": "2026-07-27"
         },
         {
           "label": "Events",
