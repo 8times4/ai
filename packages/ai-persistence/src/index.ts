@@ -89,7 +89,6 @@ export type {
 export {
   retrieveArtifact,
   retrieveBlob,
-  artifactBlobKey,
   resolveArtifactBlobKey,
 } from './retrieve'
 
@@ -99,10 +98,6 @@ export { parseRangeHeader, resolveBlobRange } from './blob-range'
 
 // Reference in-memory implementation
 export { memoryPersistence } from './memory'
-
-// Interrupt controller
-export { createInterruptController } from './interrupts'
-export type { InterruptController } from './interrupts'
 
 // Persistence-owned capabilities only. Locks: @tanstack/ai.
 export {
