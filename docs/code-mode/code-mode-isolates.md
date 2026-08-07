@@ -2,7 +2,7 @@
 title: Code Mode Isolate Drivers
 id: code-mode-isolates
 order: 4
-description: "Compare Code Mode sandbox drivers — Node isolated-vm, QuickJS WASM, QuickJS Bun (bun:ffi), and Cloudflare Workers — and choose the right runtime for your deployment."
+description: "Compare Code Mode sandbox drivers — Node isolated-vm, QuickJS WASM, QuickJS Bun (bun:ffi), Cloudflare Workers, and Daytona sandboxes — and choose the right runtime for your deployment."
 keywords:
   - tanstack ai
   - code mode
@@ -13,6 +13,7 @@ keywords:
   - bun
   - bun:ffi
   - cloudflare workers
+  - daytona
   - sandbox
   - secure execution
 ---
@@ -22,15 +23,15 @@ Isolate drivers provide the secure sandbox runtimes that [Code Mode](./code-mode
 ## Choosing a Driver
 
 
-|                      | Node (`isolated-vm`)     | QuickJS (WASM)              | QuickJS Bun (`bun:ffi`)  | Cloudflare Workers             |
-| -------------------- | ------------------------ | --------------------------- | ------------------------ | ------------------------------ |
-| **Best for**         | Server-side Node.js apps | Browsers, edge, portability | Bun servers              | Edge deployments on Cloudflare |
-| **Performance**      | Fast (V8 JIT)            | Slower (interpreted)        | Fast (native QuickJS)    | Fast (V8 on Cloudflare edge)   |
-| **Native deps**      | Yes (C++ addon)          | None                        | None (TinyCC on the fly) | None                           |
-| **Browser support**  | No                       | Yes                         | No (Bun only)            | N/A                            |
-| **Memory limit**     | Configurable             | Configurable                | Configurable             | N/A                            |
-| **Stack size limit** | N/A                      | Configurable                | Configurable             | N/A                            |
-| **Setup**            | `pnpm add`               | `pnpm add`                  | `bun add`                | Deploy a Worker first          |
+|                      | Node (`isolated-vm`)     | QuickJS (WASM)              | QuickJS Bun (`bun:ffi`)  | Cloudflare Workers             | Daytona                            |
+| -------------------- | ------------------------ | --------------------------- | ------------------------ | ------------------------------ | ---------------------------------- |
+| **Best for**         | Server-side Node.js apps | Browsers, edge, portability | Bun servers              | Edge deployments on Cloudflare | Full remote Linux sandboxes        |
+| **Performance**      | Fast (V8 JIT)            | Slower (interpreted)        | Fast (native QuickJS)    | Fast (V8 on Cloudflare edge)   | Fast (native runtime; remote call) |
+| **Native deps**      | Yes (C++ addon)          | None                        | None (TinyCC on the fly) | None                           | None                               |
+| **Browser support**  | No                       | Yes                         | No (Bun only)            | N/A                            | Yes                                |
+| **Memory limit**     | Configurable             | Configurable                | Configurable             | N/A                            | Configurable                       |
+| **Stack size limit** | N/A                      | Configurable                | Configurable             | N/A                            | N/A                                |
+| **Setup**            | `pnpm add`               | `pnpm add`                  | `bun add`                | Deploy a Worker first          | Create or pass a Daytona sandbox   |
 
 
 ---
@@ -236,9 +237,68 @@ Each round-trip adds network latency, so the `maxToolRounds` limit both prevents
 
 ---
 
+## Daytona Driver (`@tanstack/ai-isolate-daytona`)
+
+Runs generated code inside a Daytona sandbox through `sandbox.process.codeRun`. Your application process still owns TanStack tool implementations; the Daytona sandbox only receives wrapped generated code plus replayed tool results.
+
+### Installation
+
+```bash
+pnpm add @tanstack/ai-isolate-daytona
+```
+
+If your application creates sandboxes with the official Daytona SDK, also install it:
+
+```bash
+pnpm add @daytona/sdk
+```
+
+### Usage
+
+```typescript
+import { Daytona } from '@daytona/sdk'
+import { createDaytonaIsolateDriver } from '@tanstack/ai-isolate-daytona'
+
+const daytona = new Daytona()
+const sandbox = await daytona.create({ language: 'typescript' })
+
+const driver = createDaytonaIsolateDriver({
+  sandbox,
+  timeout: 30_000,
+  maxToolRounds: 10,
+})
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sandbox` | `DaytonaSandboxLike` | — | **Required.** A caller-owned Daytona sandbox-like object with `process.codeRun(code, params?, timeout?)`. |
+| `timeout` | `number` | `30000` | Maximum wall-clock time for the entire execution, including replay rounds, in milliseconds. |
+| `maxToolRounds` | `number` | `10` | Maximum number of sandbox <-> host tool callback rounds. Prevents infinite loops when generated code repeatedly asks for tools. |
+
+### How it works
+
+The driver uses the same host-owned tool replay shape as the Cloudflare driver without Cloudflare's parent Worker / Dynamic Worker split:
+
+```text
+Driver (your server)              Daytona sandbox
+─────────────────────             ───────────────
+Send: wrapped code        ──────▶  Execute with process.codeRun
+                           ◀──────  Return: need_tools with tool requests
+Execute tools locally
+Replay with toolResults   ──────▶  Continue execution
+                           ◀──────  Return: final result / more tool requests
+...repeat until done...
+```
+
+Use this driver when you want Code Mode execution in a full Daytona sandbox instead of an in-process isolate, QuickJS WASM runtime, or Cloudflare Worker. The sandbox should use a language/runtime capable of executing the JavaScript emitted by Code Mode, and your application remains responsible for sandbox lifecycle, filesystem, network, cleanup, and secret policy. Creating a Code Mode context does not create or delete a Daytona sandbox.
+
+---
+
 ## The `IsolateDriver` Interface
 
-All four drivers satisfy this interface, exported from `@tanstack/ai-code-mode`:
+All provided drivers satisfy this interface, exported from `@tanstack/ai-code-mode`:
 
 ```typescript
 import type { ToolBinding, NormalizedError } from "@tanstack/ai-code-mode";
