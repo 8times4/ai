@@ -76,6 +76,8 @@ export interface SandboxEnsureContext {
   locks?: LockStore
   tenant?: { userId?: string; orgId?: string }
   signal?: AbortSignal
+  /** Harness adapter name (`grok-build`, `claude-code`, `codex`, `opencode`). Optional. */
+  adapterName?: string
 }
 
 export interface SandboxDefinition {
@@ -126,6 +128,10 @@ const fallbackLocks = new InMemoryLockStore()
 /**
  * Put workspace secrets onto a live handle. Resume and snapshot restore skip
  * bootstrap, so this is the only path that re-injects them after reconnect.
+ * Create injects secrets via `provider.create({ env })`, but resume/restore
+ * return a handle whose process env is empty unless we set it here. sbx in
+ * particular has no Docker Env on resume, so this is the only way secrets
+ * come back for that provider.
  */
 async function applyWorkspaceSecrets(
   handle: SandboxHandle,
@@ -224,6 +230,7 @@ export function defineSandbox(config: SandboxConfig): SandboxDefinition {
             ? resolveAllSecrets(config.workspace.secrets)
             : undefined,
         signal: ctx.signal,
+        adapterName: ctx.adapterName,
       })
 
       if (config.workspace) {

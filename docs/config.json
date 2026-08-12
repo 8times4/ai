@@ -509,13 +509,13 @@
           "label": "Overview",
           "to": "sandbox/overview",
           "addedAt": "2026-06-16",
-          "updatedAt": "2026-08-04"
+          "updatedAt": "2026-08-12"
         },
         {
           "label": "Quick Start",
           "to": "sandbox/quick-start",
           "addedAt": "2026-06-29",
-          "updatedAt": "2026-08-04"
+          "updatedAt": "2026-08-12"
         },
         {
           "label": "Providers",
@@ -539,7 +539,7 @@
           "label": "Tools",
           "to": "sandbox/tools",
           "addedAt": "2026-06-29",
-          "updatedAt": "2026-08-04"
+          "updatedAt": "2026-08-12"
         },
         {
           "label": "Policy",

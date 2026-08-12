@@ -94,6 +94,50 @@ reaches out.
 Some providers also enforce network at create time when `network: 'deny'`. See
 [Providers](./providers) for that mapping.
 
+## Network policy on Docker Sandboxes
+
+Most providers leave `capabilities.network` to the harness. `sbxSandbox()` also enforces it on the host HTTP/HTTPS proxy (`networkPolicy: true`).
+
+`sbx policy` can allow or deny hosts. It has no `ask`. Deny wins over allow, so `network: 'deny'` is an allowlist, not a full deny.
+
+| TanStack `capabilities.network` | What `sbxSandbox()` writes |
+| --- | --- |
+| No policy and no `allowNetwork` / `denyNetwork` | If the policy list is empty, `sbxSandbox()` runs `sbx policy init deny-all`. A known adapter (`grok-build`, `claude-code`, `codex`) then writes its model API host and `localhost` as a per-sandbox allow on top of that deny-all. Unknown adapters stay on the machine preset. |
+| No policy and `allowNetwork` | Per-sandbox allow of the model API host (when the adapter is known), `localhost`, and `allowNetwork`, then apply `denyNetwork`. |
+| No policy and `denyNetwork` only | Per-sandbox deny of those hosts. Allow stays empty. No auto hosts and no `localhost`. This is additive deny on the machine preset. |
+| `allow` | Allow `**`, then apply `denyNetwork`. |
+| `deny` | Allow the model API host, `localhost`, and `allowNetwork`, then apply `denyNetwork`. |
+| `ask` (or the policy `default` when `network` is unset) | Same allowlist as `deny`. The harness still asks for tools and commands. |
+
+Auto-allowed model hosts:
+
+- `grok-build` → `api.x.ai`
+- `claude-code` → `api.anthropic.com`
+- `codex` → `api.openai.com`
+- `opencode` or an unknown adapter → none
+
+If the allowlist would be empty under `deny` or `ask`, create throws. Pass `allowNetwork`, or use `grokBuildText` / `claudeCodeText` / `codexText`.
+
+The guest still dials `host.docker.internal` for the tool bridge. The `sbx` proxy rewrites that host to `localhost` before the policy match. `sbxSandbox()` adds `localhost` when it writes a real allowlist. It does not add `localhost` for `denyNetwork` only.
+
+```ts
+import { sbxSandbox } from '@tanstack/ai-sandbox-docker'
+import { defineSandbox, defineSandboxPolicy } from '@tanstack/ai-sandbox'
+
+const sandbox = defineSandbox({
+  id: 'repo-agent',
+  provider: sbxSandbox({
+    allowNetwork: ['*.npmjs.org', 'registry.npmjs.org'],
+  }),
+  policy: defineSandboxPolicy({
+    capabilities: { network: 'deny' },
+    commands: { allow: ['pnpm test'], deny: ['sudo *'] },
+  }),
+})
+```
+
+Command rules and `fileWrite` stay with the harness. `sbx` does not see command lines.
+
 ## Precedence: deny > ask > allow
 
 When more than one rule could match an action, the strictest wins. The order is
