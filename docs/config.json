@@ -446,7 +446,7 @@
           "label": "Image Generation",
           "to": "media/image-generation",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-08-13"
+          "updatedAt": "2026-08-14"
         },
         {
           "label": "Video Generation",
@@ -685,7 +685,8 @@
         {
           "label": "Runtime Adapter Switching",
           "to": "advanced/runtime-adapter-switching",
-          "addedAt": "2026-04-15"
+          "addedAt": "2026-04-15",
+          "updatedAt": "2026-08-14"
         },
         {
           "label": "Tree-Shaking",
@@ -810,7 +811,7 @@
           "label": "Google Gemini",
           "to": "adapters/gemini",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-07-22"
+          "updatedAt": "2026-08-14"
         },
         {
           "label": "Ollama",
