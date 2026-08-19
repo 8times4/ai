@@ -173,7 +173,7 @@
           "label": "Connection Adapters",
           "to": "chat/connection-adapters",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-07-30"
+          "updatedAt": "2026-08-18"
         },
         {
           "label": "Thinking & Reasoning",
@@ -220,12 +220,19 @@
         {
           "label": "Overview",
           "to": "resumable-streams/overview",
-          "addedAt": "2026-08-04"
+          "addedAt": "2026-08-04",
+          "updatedAt": "2026-08-18"
         },
         {
           "label": "Advanced",
           "to": "resumable-streams/advanced",
-          "addedAt": "2026-08-04"
+          "addedAt": "2026-08-04",
+          "updatedAt": "2026-08-19"
+        },
+        {
+          "label": "WebSockets",
+          "to": "resumable-streams/websockets",
+          "addedAt": "2026-08-19"
         },
         {
           "label": "Custom Durability Adapter",
