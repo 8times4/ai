@@ -26,6 +26,10 @@ export {
   providePendingTurn,
 } from './activities/chat/middleware/pending-turn'
 export {
+  assertUniqueToolNames,
+  DuplicateToolNameError,
+} from './activities/chat/tools/unique-tool-names'
+export {
   appendOutputSchemaInstruction,
   parseJsonFromAssistantText,
 } from './utilities/structured-output-text'
