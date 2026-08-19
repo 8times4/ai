@@ -440,7 +440,7 @@
           "label": "Audio Generation",
           "to": "media/audio-generation",
           "addedAt": "2026-04-23",
-          "updatedAt": "2026-08-04"
+          "updatedAt": "2026-08-08"
         },
         {
           "label": "Image Generation",
@@ -479,7 +479,8 @@
         {
           "label": "Reranking",
           "to": "rerank/rerank",
-          "addedAt": "2026-06-25"
+          "addedAt": "2026-06-25",
+          "updatedAt": "2026-08-19"
         }
       ]
     },
@@ -507,7 +508,7 @@
           "label": "OpenTelemetry",
           "to": "advanced/otel",
           "addedAt": "2026-05-08",
-          "updatedAt": "2026-08-06"
+          "updatedAt": "2026-08-08"
         }
       ]
     },
@@ -823,7 +824,7 @@
           "label": "Grok (xAI)",
           "to": "adapters/grok",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-08-18"
+          "updatedAt": "2026-08-19"
         },
         {
           "label": "Groq",
