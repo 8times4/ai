@@ -60,7 +60,10 @@ import type {
   UIMessage,
   WhenBusy,
 } from './types'
-import type { InterruptManagerSubmission } from './interrupt-manager'
+import type {
+  InterruptManagerChangeSource,
+  InterruptManagerSubmission,
+} from './interrupt-manager'
 
 /** Internal queue entry — public {@link QueuedMessage} plus optional per-send body. */
 interface InternalQueuedMessage extends QueuedMessage {
@@ -111,7 +114,10 @@ type ChatClientUpdateOptionsWithoutContext<
    * starts (including a rejoin), `null` when it settles.
    */
   onRunIdChange?: (runId: string | null) => void
-  onInterruptStateChange?: (state: ChatInterruptState<TTools>) => void
+  onInterruptStateChange?: (
+    state: ChatInterruptState<TTools, TInterrupts>,
+    context: { source: 'hydrate' | 'live' },
+  ) => void
   onCustomEvent?: (
     eventType: string,
     data: unknown,
@@ -422,6 +428,7 @@ export class ChatClient<
       onRunIdChange: (runId: string | null) => void
       onInterruptStateChange: (
         state: ChatInterruptState<TTools, TInterrupts>,
+        context: { source: 'hydrate' | 'live' },
       ) => void
       onCustomEvent: (
         eventType: string,
@@ -522,7 +529,7 @@ export class ChatClient<
         ? { interrupts: options.interrupts }
         : {}),
       submit: (submission) => this.submitInterruptBatch(submission),
-      onChange: () => this.notifyResumeStateChange(),
+      onChange: (source) => this.notifyResumeStateChange(source),
     })
 
     // In-memory rehydrate of interrupt descriptors (e.g. after a page reload
@@ -882,7 +889,7 @@ export class ChatClient<
   private applyResumeSnapshot(snapshot: ChatResumeSnapshot): void {
     const resumeState = readResumeState(snapshot)
     if (resumeState === undefined) {
-      this.interruptManager.reset()
+      this.interruptManager.reset({ source: 'hydrate' })
       return
     }
     this.lastResume = resumeState
@@ -890,16 +897,19 @@ export class ChatClient<
       ? snapshot.pendingInterrupts
       : []
     if (pendingInterrupts.length === 0) {
-      this.interruptManager.reset()
+      this.interruptManager.reset({ source: 'hydrate' })
       return
     }
     const generation = this.interruptGeneration(pendingInterrupts)
-    this.interruptManager.hydrate({
-      threadId: resumeState.threadId,
-      interruptedRunId: resumeState.runId,
-      generation,
-      interrupts: pendingInterrupts,
-    })
+    this.interruptManager.hydrate(
+      {
+        threadId: resumeState.threadId,
+        interruptedRunId: resumeState.runId,
+        generation,
+        interrupts: pendingInterrupts,
+      },
+      'hydrate',
+    )
   }
 
   /**
@@ -1128,12 +1138,15 @@ export class ChatClient<
         threadId: threadId ?? this.threadId,
         runId: interruptedRunId,
       }
-      this.interruptManager.hydrate({
-        threadId: this.lastResume.threadId,
-        interruptedRunId,
-        generation: this.interruptGeneration(chunk.outcome.interrupts),
-        interrupts: chunk.outcome.interrupts,
-      })
+      this.interruptManager.hydrate(
+        {
+          threadId: this.lastResume.threadId,
+          interruptedRunId,
+          generation: this.interruptGeneration(chunk.outcome.interrupts),
+          interrupts: chunk.outcome.interrupts,
+        },
+        'live',
+      )
       return
     }
 
@@ -1180,7 +1193,7 @@ export class ChatClient<
       this.interruptManager.reset()
       return
     }
-    this.notifyResumeStateChange()
+    this.notifyResumeStateChange('live')
   }
 
   /**
@@ -1400,19 +1413,20 @@ export class ChatClient<
     this.devtoolsBridge.emitSnapshot()
   }
 
-  private notifyResumeStateChange(): void {
+  private notifyResumeStateChange(source: InterruptManagerChangeSource): void {
     const resumeState = this.getResumeState()
+    // Capture state before invoking callbacks so a synchronous nested change
+    // cannot pair this publication's source with a later manager snapshot.
+    const interruptState = this.interruptManager.getState()
     // Persist (or clear) the durable resume snapshot so a full page reload can
     // rehydrate pending interrupts and rejoin the run. Folded into the same
     // persistence adapter that stores messages (one record per chat).
     this.persistResumeSnapshot(resumeState)
     this.callbacksRef.current.onResumeStateChange(
       resumeState,
-      this.interruptManager.getInterrupts(),
+      interruptState.interrupts,
     )
-    this.callbacksRef.current.onInterruptStateChange(
-      this.interruptManager.getState(),
-    )
+    this.callbacksRef.current.onInterruptStateChange(interruptState, { source })
   }
 
   /**
