@@ -1028,8 +1028,7 @@ export interface TextOptions<
 
   /**
    * AG-UI interrupt resume responses supplied by the client on a follow-up run.
-   * Threaded through request parsing now so later runtime behavior can resolve
-   * upstream-native interrupts.
+   * A first-party generic item carries the original request in `metadata`.
    */
   resume?: Array<RunAgentResumeItem>
 
@@ -1128,7 +1127,10 @@ export type Interrupt = AGUIInterrupt
 
 export type RunFinishedOutcome = AGUIRunFinishedOutcome
 
-export type RunAgentResumeItem = AGUIResumeEntry
+export type RunAgentResumeItem = AGUIResumeEntry & {
+  /** AG-UI resume metadata. First-party generic requests ride here. */
+  metadata?: Record<string, unknown>
+}
 
 /**
  * Emitted when a run completes successfully.

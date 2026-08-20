@@ -10,7 +10,7 @@ import {
 } from 'preact/hooks'
 import type {
   ChatClientState,
-  ChatInterrupt,
+  ResolvableChatInterrupt,
   ChatInterruptState,
   ChatResumeState,
   ConnectionStatus,
@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/ai-client'
 import type {
   AnyClientTool,
+  InterruptDefinition,
   ModelMessage,
   RunAgentResumeItem,
 } from '@tanstack/ai'
@@ -37,7 +38,12 @@ const EMPTY_INTERRUPT_ERRORS = Object.freeze([])
 export function useChat<
   const TTools extends ReadonlyArray<AnyClientTool> = any,
   TContext = InferredClientContext<TTools>,
->(options: UseChatOptions<TTools, TContext>): UseChatReturn<TTools> {
+  const TInterrupts extends ReadonlyArray<
+    InterruptDefinition<any, any, any, any>
+  > = readonly [],
+>(
+  options: UseChatOptions<TTools, TContext, TInterrupts>,
+): UseChatReturn<TTools, TInterrupts> {
   // The hook's identity is its `threadId`. Reload with the same `threadId`
   // restores the same conversation. `hookId` is only a recreation key when no
   // `threadId` is given. It is never sent on the wire.
@@ -57,7 +63,7 @@ export function useChat<
   const [queue, setQueue] = useState<Array<QueuedMessage>>([])
   const [runId, setRunId] = useState<string | null>(null)
   const [interruptState, setInterruptState] = useState<
-    ChatInterruptState<TTools>
+    ChatInterruptState<TTools, TInterrupts>
   >(() => ({
     interrupts: EMPTY_INTERRUPTS,
     pendingInterrupts: EMPTY_INTERRUPTS,
@@ -78,7 +84,8 @@ export function useChat<
     client: ChatClient
     timeout: ReturnType<typeof setTimeout>
   } | null>(null)
-  const optionsRef = useRef<UseChatOptions<TTools, TContext>>(options)
+  const optionsRef =
+    useRef<UseChatOptions<TTools, TContext, TInterrupts>>(options)
 
   optionsRef.current = options
 
@@ -106,7 +113,7 @@ export function useChat<
       : { fetcher: initialOptions.fetcher }
 
     const instanceHolder: {
-      current: ChatClient<TTools, TContext> | undefined
+      current: ChatClient<TTools, TContext, TInterrupts> | undefined
     } = { current: undefined }
     const getActiveInstance = () => {
       const currentInstance = instanceHolder.current
@@ -116,7 +123,7 @@ export function useChat<
       return currentInstance
     }
     const pendingInitializationErrors: Array<Error> = []
-    const instance = new ChatClient<TTools, TContext>({
+    const instance = new ChatClient<TTools, TContext, TInterrupts>({
       devtoolsBridgeFactory: createChatDevtoolsBridge,
       ...transport,
       initialMessages: messagesToUse,
@@ -177,6 +184,9 @@ export function useChat<
       },
       ...(initialOptions.tools !== undefined && {
         tools: initialOptions.tools,
+      }),
+      ...(initialOptions.interrupts !== undefined && {
+        interrupts: initialOptions.interrupts,
       }),
       ...(options.streamProcessor !== undefined && {
         streamProcessor: options.streamProcessor,
@@ -437,7 +447,11 @@ export function useChat<
 
   const resolveInterrupts = useCallback(
     (
-      resolution: boolean | ((interrupt: ChatInterrupt<TTools>) => undefined),
+      resolution:
+        | boolean
+        | ((
+            interrupt: ResolvableChatInterrupt<TTools, TInterrupts>,
+          ) => undefined),
     ) => {
       if (typeof resolution === 'boolean') {
         client.resolveInterrupts(resolution)
