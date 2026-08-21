@@ -1,14 +1,13 @@
 import { BaseTextAdapter } from '@tanstack/ai/adapters'
+import { undoNullWidening } from '@tanstack/ai-utils'
 import { convertToolsToProviderFormat } from '../tools/tool-converter'
 import {
   createMistralClient,
   generateId,
   getMistralApiKeyFromEnv,
 } from '../utils/client'
-import {
-  makeMistralStructuredOutputCompatible,
-  transformNullsToUndefined,
-} from '../utils/schema-converter'
+import { makeMistralStructuredOutputCompatibleWithMap } from '../utils/schema-converter'
+import { createToolInputNormalizer } from '../utils/tool-input-normalizer'
 import type {
   ContentPart,
   Modality,
@@ -39,6 +38,7 @@ import type {
   MistralMessageMetadataByModality,
 } from '../message-types'
 import type { MistralClientConfig } from '../utils/client'
+import type { ToolInputNormalizer } from '../utils/tool-input-normalizer'
 
 /** Cast an event object to StreamChunk. Adapters construct events with string
  *  literal types which are structurally compatible with the EventType enum. */
@@ -51,14 +51,17 @@ const asChunk = (chunk: Record<string, unknown>) =>
  * error if the JSON is malformed — silently substituting `{}` would let a
  * tool fire with empty inputs, masking truncated streams or mis-shaped output.
  */
-function parseToolCallInput(toolCall: {
-  id: string
-  name: string
-  arguments: string
-}): unknown {
+function parseToolCallInput(
+  toolCall: {
+    id: string
+    name: string
+    arguments: string
+  },
+  normalizeToolInput: ToolInputNormalizer,
+): unknown {
   if (!toolCall.arguments) return {}
   try {
-    return transformNullsToUndefined(JSON.parse(toolCall.arguments))
+    return normalizeToolInput(toolCall.name, JSON.parse(toolCall.arguments))
   } catch (cause) {
     const preview = toolCall.arguments.slice(0, 200)
     const ellipsis = toolCall.arguments.length > 200 ? '...' : ''
@@ -243,7 +246,11 @@ export class MistralTextAdapter<
     const { stream: _stream, ...nonStreamParams } =
       this.mapTextOptionsToMistral(chatOptions)
 
-    const jsonSchema = makeMistralStructuredOutputCompatible(
+    const {
+      schema: jsonSchema,
+      nullWideningMap,
+      strict,
+    } = makeMistralStructuredOutputCompatibleWithMap(
       outputSchema,
       outputSchema.required || [],
     )
@@ -255,7 +262,7 @@ export class MistralTextAdapter<
         jsonSchema: {
           name: 'structured_output',
           schemaDefinition: jsonSchema,
-          strict: true,
+          strict,
         },
       },
     })
@@ -274,7 +281,7 @@ export class MistralTextAdapter<
 
     const usage = response.usage
     return {
-      data: transformNullsToUndefined(parsed),
+      data: undoNullWidening(parsed, nullWideningMap),
       rawText: textContent,
       ...(usage && {
         usage: {
@@ -307,6 +314,7 @@ export class MistralTextAdapter<
     let hasEmittedToolCall = false
     let hasEmittedRunFinished = false
     let lastChunkModel = options.model
+    const normalizeToolInput = createToolInputNormalizer(options.tools)
 
     // Reasoning lifecycle (magistral-* models stream `thinking` content
     // parts before any text). Mirrors the anthropic adapter's pattern:
@@ -514,7 +522,10 @@ export class MistralTextAdapter<
                 continue
               }
 
-              const parsedInput = parseToolCallInput(toolCall)
+              const parsedInput = parseToolCallInput(
+                toolCall,
+                normalizeToolInput,
+              )
 
               toolCall.ended = true
               hasEmittedToolCall = true
@@ -616,7 +627,7 @@ export class MistralTextAdapter<
               toolName: toolCall.name,
               model: lastChunkModel,
               timestamp,
-              input: parseToolCallInput(toolCall),
+              input: parseToolCallInput(toolCall, normalizeToolInput),
             })
           }
         }
@@ -677,7 +688,10 @@ export class MistralTextAdapter<
           let partialInput: unknown = {}
           try {
             partialInput = toolCall.arguments
-              ? transformNullsToUndefined(JSON.parse(toolCall.arguments))
+              ? normalizeToolInput(
+                  toolCall.name,
+                  JSON.parse(toolCall.arguments),
+                )
               : {}
           } catch {
             partialInput = {}
