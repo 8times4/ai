@@ -47,6 +47,7 @@ import { Route as ApiOpenrouterWebToolsWireRouteImport } from './routes/api.open
 import { Route as ApiOpenrouterJsonObjectWireRouteImport } from './routes/api.openrouter-json-object-wire'
 import { Route as ApiOpenrouterCostRouteImport } from './routes/api.openrouter-cost'
 import { Route as ApiOpenaiUsageDetailsRouteImport } from './routes/api.openai-usage-details'
+import { Route as ApiOpenaiStrictToolNullWireRouteImport } from './routes/api.openai-strict-tool-null-wire'
 import { Route as ApiOpenaiShellSkillsWireRouteImport } from './routes/api.openai-shell-skills-wire'
 import { Route as ApiOpenaiCompletedResponseTextRouteImport } from './routes/api.openai-completed-response-text'
 import { Route as ApiNonStreamingRunErrorRouteImport } from './routes/api.non-streaming-run-error'
@@ -287,6 +288,12 @@ const ApiOpenaiUsageDetailsRoute = ApiOpenaiUsageDetailsRouteImport.update({
   path: '/api/openai-usage-details',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOpenaiStrictToolNullWireRoute =
+  ApiOpenaiStrictToolNullWireRouteImport.update({
+    id: '/api/openai-strict-tool-null-wire',
+    path: '/api/openai-strict-tool-null-wire',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiOpenaiShellSkillsWireRoute =
   ApiOpenaiShellSkillsWireRouteImport.update({
     id: '/api/openai-shell-skills-wire',
@@ -557,6 +564,7 @@ export interface FileRoutesByFullPath {
   '/api/non-streaming-run-error': typeof ApiNonStreamingRunErrorRoute
   '/api/openai-completed-response-text': typeof ApiOpenaiCompletedResponseTextRoute
   '/api/openai-shell-skills-wire': typeof ApiOpenaiShellSkillsWireRoute
+  '/api/openai-strict-tool-null-wire': typeof ApiOpenaiStrictToolNullWireRoute
   '/api/openai-usage-details': typeof ApiOpenaiUsageDetailsRoute
   '/api/openrouter-cost': typeof ApiOpenrouterCostRoute
   '/api/openrouter-json-object-wire': typeof ApiOpenrouterJsonObjectWireRoute
@@ -638,6 +646,7 @@ export interface FileRoutesByTo {
   '/api/non-streaming-run-error': typeof ApiNonStreamingRunErrorRoute
   '/api/openai-completed-response-text': typeof ApiOpenaiCompletedResponseTextRoute
   '/api/openai-shell-skills-wire': typeof ApiOpenaiShellSkillsWireRoute
+  '/api/openai-strict-tool-null-wire': typeof ApiOpenaiStrictToolNullWireRoute
   '/api/openai-usage-details': typeof ApiOpenaiUsageDetailsRoute
   '/api/openrouter-cost': typeof ApiOpenrouterCostRoute
   '/api/openrouter-json-object-wire': typeof ApiOpenrouterJsonObjectWireRoute
@@ -720,6 +729,7 @@ export interface FileRoutesById {
   '/api/non-streaming-run-error': typeof ApiNonStreamingRunErrorRoute
   '/api/openai-completed-response-text': typeof ApiOpenaiCompletedResponseTextRoute
   '/api/openai-shell-skills-wire': typeof ApiOpenaiShellSkillsWireRoute
+  '/api/openai-strict-tool-null-wire': typeof ApiOpenaiStrictToolNullWireRoute
   '/api/openai-usage-details': typeof ApiOpenaiUsageDetailsRoute
   '/api/openrouter-cost': typeof ApiOpenrouterCostRoute
   '/api/openrouter-json-object-wire': typeof ApiOpenrouterJsonObjectWireRoute
@@ -803,6 +813,7 @@ export interface FileRouteTypes {
     | '/api/non-streaming-run-error'
     | '/api/openai-completed-response-text'
     | '/api/openai-shell-skills-wire'
+    | '/api/openai-strict-tool-null-wire'
     | '/api/openai-usage-details'
     | '/api/openrouter-cost'
     | '/api/openrouter-json-object-wire'
@@ -884,6 +895,7 @@ export interface FileRouteTypes {
     | '/api/non-streaming-run-error'
     | '/api/openai-completed-response-text'
     | '/api/openai-shell-skills-wire'
+    | '/api/openai-strict-tool-null-wire'
     | '/api/openai-usage-details'
     | '/api/openrouter-cost'
     | '/api/openrouter-json-object-wire'
@@ -965,6 +977,7 @@ export interface FileRouteTypes {
     | '/api/non-streaming-run-error'
     | '/api/openai-completed-response-text'
     | '/api/openai-shell-skills-wire'
+    | '/api/openai-strict-tool-null-wire'
     | '/api/openai-usage-details'
     | '/api/openrouter-cost'
     | '/api/openrouter-json-object-wire'
@@ -1047,6 +1060,7 @@ export interface RootRouteChildren {
   ApiNonStreamingRunErrorRoute: typeof ApiNonStreamingRunErrorRoute
   ApiOpenaiCompletedResponseTextRoute: typeof ApiOpenaiCompletedResponseTextRoute
   ApiOpenaiShellSkillsWireRoute: typeof ApiOpenaiShellSkillsWireRoute
+  ApiOpenaiStrictToolNullWireRoute: typeof ApiOpenaiStrictToolNullWireRoute
   ApiOpenaiUsageDetailsRoute: typeof ApiOpenaiUsageDetailsRoute
   ApiOpenrouterCostRoute: typeof ApiOpenrouterCostRoute
   ApiOpenrouterJsonObjectWireRoute: typeof ApiOpenrouterJsonObjectWireRoute
@@ -1334,6 +1348,13 @@ declare module '@tanstack/react-router' {
       path: '/api/openai-usage-details'
       fullPath: '/api/openai-usage-details'
       preLoaderRoute: typeof ApiOpenaiUsageDetailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/openai-strict-tool-null-wire': {
+      id: '/api/openai-strict-tool-null-wire'
+      path: '/api/openai-strict-tool-null-wire'
+      fullPath: '/api/openai-strict-tool-null-wire'
+      preLoaderRoute: typeof ApiOpenaiStrictToolNullWireRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/openai-shell-skills-wire': {
@@ -1740,6 +1761,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNonStreamingRunErrorRoute: ApiNonStreamingRunErrorRoute,
   ApiOpenaiCompletedResponseTextRoute: ApiOpenaiCompletedResponseTextRoute,
   ApiOpenaiShellSkillsWireRoute: ApiOpenaiShellSkillsWireRoute,
+  ApiOpenaiStrictToolNullWireRoute: ApiOpenaiStrictToolNullWireRoute,
   ApiOpenaiUsageDetailsRoute: ApiOpenaiUsageDetailsRoute,
   ApiOpenrouterCostRoute: ApiOpenrouterCostRoute,
   ApiOpenrouterJsonObjectWireRoute: ApiOpenrouterJsonObjectWireRoute,
