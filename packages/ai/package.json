@@ -48,6 +48,14 @@
     "./adapter-internals": {
       "types": "./dist/esm/adapter-internals.d.ts",
       "import": "./dist/esm/adapter-internals.js"
+    },
+    "./byok": {
+      "types": "./dist/esm/byok.d.ts",
+      "import": "./dist/esm/byok.js"
+    },
+    "./byok/server": {
+      "types": "./dist/esm/byok/server.d.ts",
+      "import": "./dist/esm/byok/server.js"
     }
   },
   "sideEffects": false,
