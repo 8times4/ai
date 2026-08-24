@@ -1898,8 +1898,12 @@ export class ChatClient<
    *   - A MultimodalContent object with content array and optional custom ID
    * @param body - Optional body parameters to merge with the client's base body for this request.
    *               Uses shallow merge with per-message body taking priority.
-   * @param sendOptions - Per-call overrides, e.g. `{ whenBusy: 'interrupt' }` to
-   *                      override the configured queue policy for this one send.
+   * @param sendOptions - Per-call overrides. `{ whenBusy }` overrides the
+   *                      queue policy for this one send. `{ body }`
+   *                      shallow-merges with `body` and with the chat-level
+   *                      `body` / `forwardedProps`. `sendOptions.body` wins
+   *                      on key collisions. Framework hooks forward this
+   *                      object as their second argument.
    *
    * @example
    * ```ts
@@ -1909,8 +1913,12 @@ export class ChatClient<
    * // Text message with custom body params
    * await client.sendMessage('Hello!', { temperature: 0.7 })
    *
-   * // Per-call whenBusy override (body must still be the 2nd arg on ChatClient)
+   * // Per-call whenBusy override
    * await client.sendMessage('Urgent', undefined, { whenBusy: 'interrupt' })
+   *
+   * // Per-call body via options. Same effect as the positional arg.
+   * // This is the shape the framework hooks (`useChat`, `injectChat`) forward.
+   * await client.sendMessage('Hello!', undefined, { body: { temperature: 0.7 } })
    *
    * // Multimodal message with image
    * await client.sendMessage({
@@ -1949,13 +1957,15 @@ export class ChatClient<
       )
     }
 
+    const resolvedBody = { ...body, ...sendOptions?.body }
+
     if (this.isSendBusy()) {
       const { action, id } = this.decideWhenBusy(content, sendOptions)
       if (action === 'drop') {
         return
       }
       if (action === 'queue') {
-        this.enqueueMessage(content, body, id)
+        this.enqueueMessage(content, resolvedBody, id)
         return
       }
       // 'interrupt': abort the current stream, then send now.
@@ -1972,7 +1982,7 @@ export class ChatClient<
     }
 
     try {
-      await this.deliverMessage(content, body)
+      await this.deliverMessage(content, resolvedBody)
     } finally {
       this.sendInFlight = false
     }
@@ -2207,7 +2217,7 @@ export class ChatClient<
       // order (later spreads win):
       //   1. Legacy `body` option (deprecated).
       //   2. Canonical `forwardedProps` option (wins over `body`).
-      //   3. Per-message `body` arg passed to `sendMessage` (highest).
+      //   3. Per-call body (`pendingMessageBody`: positional + sendOptions.body).
       // The AG-UI standard `threadId` is sent at the wire's top level for
       // run/conversation correlation, so we no longer auto-emit a separate
       // `conversationId` here — `chat({ threadId })` server-side covers the

@@ -103,10 +103,17 @@ Extends `ChatClientOptions` from `@tanstack/ai-client`:
 ```typescript
 import type { UIMessage } from "@tanstack/ai-react";
 import type { ModelMessage } from "@tanstack/ai";
+import type {
+  MultimodalContent,
+  SendMessageOptions,
+} from "@tanstack/ai-client";
 
 interface UseChatReturn {
   messages: UIMessage[];
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (
+    content: string | MultimodalContent,
+    options?: SendMessageOptions,
+  ) => Promise<void>;
   append: (message: ModelMessage | UIMessage) => Promise<void>;
   addToolResult: (result: {
     toolCallId: string;

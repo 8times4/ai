@@ -97,11 +97,15 @@ import type {
   MultimodalContent,
   ChatClientState,
   ConnectionStatus,
+  SendMessageOptions,
 } from "@tanstack/ai-client";
 
 interface UseChatReturn {
   messages: DeepReadonly<ShallowRef<UIMessage[]>>;
-  sendMessage: (content: string | MultimodalContent) => Promise<void>;
+  sendMessage: (
+    content: string | MultimodalContent,
+    options?: SendMessageOptions,
+  ) => Promise<void>;
   append: (message: ModelMessage | UIMessage) => Promise<void>;
   addToolResult: (result: {
     toolCallId: string;

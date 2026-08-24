@@ -92,12 +92,21 @@ Extends `ChatClientOptions` from `@tanstack/ai-client` (minus internal state cal
 ### Returns
 
 ```typescript
-import type { UIMessage, MultimodalContent, ChatClientState, ConnectionStatus } from "@tanstack/ai-client";
+import type {
+  UIMessage,
+  MultimodalContent,
+  ChatClientState,
+  ConnectionStatus,
+  SendMessageOptions,
+} from "@tanstack/ai-client";
 import type { ModelMessage } from "@tanstack/ai";
 
 interface CreateChatReturn<TContext = unknown> {
   readonly messages: UIMessage[];
-  sendMessage: (content: string | MultimodalContent) => Promise<void>;
+  sendMessage: (
+    content: string | MultimodalContent,
+    options?: SendMessageOptions,
+  ) => Promise<void>;
   append: (message: ModelMessage | UIMessage) => Promise<void>;
   addToolResult: (result: {
     toolCallId: string;
