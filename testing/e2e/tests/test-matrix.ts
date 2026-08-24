@@ -32,6 +32,7 @@ export const providers: Provider[] = [
   'lovable',
   'lovable-responses',
   'openai-compatible',
+  'openai-compatible-legacy',
   'mistral',
   'byteplus',
   'elevenlabs',

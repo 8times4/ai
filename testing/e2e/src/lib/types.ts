@@ -19,6 +19,7 @@ export type Provider =
   | 'lovable'
   | 'lovable-responses'
   | 'openai-compatible'
+  | 'openai-compatible-legacy'
   | 'mistral'
   | 'byteplus'
   | 'elevenlabs'
@@ -75,6 +76,7 @@ export const ALL_PROVIDERS: Provider[] = [
   'lovable',
   'lovable-responses',
   'openai-compatible',
+  'openai-compatible-legacy',
   'mistral',
   'byteplus',
   'elevenlabs',
