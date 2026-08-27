@@ -212,6 +212,7 @@ export class StreamProcessor {
   private finishReason: string | null = null
   private hasError = false
   private isDone = false
+  private streamEndEmitted = false
 
   // Recording
   private recording: ChunkRecording | null = null
@@ -729,7 +730,24 @@ export class StreamProcessor {
         return id
       }
     }
+    // finalizeStream() clears activeMessageIds but keeps messageStates.
+    // Leftover reasoning after an early RUN_FINISHED must resume that
+    // assistant. A new user turn calls prepareAssistantMessage(), which
+    // clears messageStates first.
+    for (const [id, state] of [...this.messageStates].reverse()) {
+      if (state.role === 'assistant') {
+        return id
+      }
+    }
     return null
+  }
+
+  private resumeAssistantState(id: string, state: MessageStreamState): void {
+    this.activeMessageIds.add(id)
+    if (state.isComplete || this.isDone) {
+      state.isComplete = false
+      this.isDone = false
+    }
   }
 
   /**
@@ -748,14 +766,20 @@ export class StreamProcessor {
     // Try to find state by preferred ID
     if (preferredId) {
       const state = this.getMessageState(preferredId)
-      if (state) return { messageId: preferredId, state }
+      if (state) {
+        this.resumeAssistantState(preferredId, state)
+        return { messageId: preferredId, state }
+      }
     }
 
     // Try active assistant message
     const activeId = this.getActiveAssistantMessageId()
     if (activeId) {
       const state = this.getMessageState(activeId)
-      if (state) return { messageId: activeId, state }
+      if (state) {
+        this.resumeAssistantState(activeId, state)
+        return { messageId: activeId, state }
+      }
     }
 
     // Check if a message with preferredId already exists (reconnect/resume case).
@@ -1659,8 +1683,14 @@ export class StreamProcessor {
     }
 
     if (this.activeRuns.size === 0) {
-      this.isDone = true
       this.completeAllToolCalls()
+      const isIntermediateToolTurn =
+        this.finishReason === 'tool_calls' &&
+        chunk.outcome?.type !== 'interrupt'
+      if (isIntermediateToolTurn) {
+        return
+      }
+      this.isDone = true
       this.finalizeStream()
     }
   }
@@ -2356,6 +2386,7 @@ export class StreamProcessor {
    * @see docs/chat-architecture.md#single-shot-text-response — Finalization step
    */
   finalizeStream(): void {
+    this.isDone = true
     let lastAssistantMessage: UIMessage | undefined
 
     // Finalize ALL active messages
@@ -2419,7 +2450,8 @@ export class StreamProcessor {
     }
 
     // Emit stream end for the last assistant message
-    if (lastAssistantMessage) {
+    if (lastAssistantMessage && !this.streamEndEmitted) {
+      this.streamEndEmitted = true
       this.events.onStreamEnd?.(lastAssistantMessage)
     }
   }
@@ -2538,6 +2570,7 @@ export class StreamProcessor {
     this.finishReason = null
     this.hasError = false
     this.isDone = false
+    this.streamEndEmitted = false
     this.chunkStrategy.reset?.()
   }
 
