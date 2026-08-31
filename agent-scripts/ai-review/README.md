@@ -1,6 +1,6 @@
 # Grok PR review bot
 
-A GitHub Action that reviews open pull requests with TanStack AI (`chat()` + `grokText('grok-4.6')` + high reasoning). It comments, sets one `ai-*` label, and can push listed polish commits.
+A GitHub Action that reviews open pull requests with TanStack AI (`chat()` + `grokBuildText('grok-4.6')`). It comments, sets one `ai-*` label, and can push listed polish commits.
 
 The first lines of every bot comment say the comment is automated. It is not a maintainer review. The bot never GitHub-approves and never merges.
 
@@ -15,11 +15,13 @@ Until both secrets exist, the job fails with `missing AI_REVIEW_TOKEN or XAI_API
 
 ## How a run starts
 
-- Auto: `pull_request` opened, synchronize, or ready_for_review (non-draft).
+- Auto: `pull_request` opened, synchronize, or ready_for_review, when the PR is not a draft.
+- Auto does not start when the PR author is AlemTuzlak, tombeckenham, or jherr.
+- Keep those logins in sync with `.github/maintainers.json`. GitHub then shows a skipped check, not a cancelled check.
 - Manual: Actions `workflow_dispatch` with a PR number.
 - Manual: a login in `.github/maintainers.json` comments `/ai-review` on the PR.
 
-Auto skips drafts, bot PRs, the machine user's own head commit, and a head SHA this bot already reviewed. Manual still runs on those, except it never executes PR code.
+Auto also skips drafts, bot PRs, roster-maintainer PRs, the machine user's own head commit, and a head SHA this bot already reviewed. Manual still runs on those. The bot never executes PR code.
 
 ## Labels
 
@@ -46,6 +48,7 @@ Open the **AI review** workflow log. Common causes:
 - Missing `AI_REVIEW_TOKEN` or `XAI_API_KEY`
 - Fork with maintainer edits off (comment is posted, label is `ai-needs-work`, no push)
 - `chat()` did not return a valid verdict object
+- Workspace setup failed to install the Grok CLI
 
 ## Layout
 

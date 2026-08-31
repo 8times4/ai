@@ -26,7 +26,11 @@ jobs:
   review:
     name: Review
     if: >
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+      (github.event_name == 'pull_request'
+        && github.event.pull_request.draft == false
+        && github.event.pull_request.user.login != 'AlemTuzlak'
+        && github.event.pull_request.user.login != 'tombeckenham'
+        && github.event.pull_request.user.login != 'jherr')
       || github.event_name == 'workflow_dispatch'
       || (github.event_name == 'issue_comment'
         && github.event.issue.pull_request
@@ -44,7 +48,7 @@ jobs:
       - name: Setup Tools
         uses: TanStack/config/.github/setup@190f659075ff0845850e330883eb26d7ffd0671f # main
       - name: Build packages
-        run: pnpm exec nx run @tanstack/ai-grok:build
+        run: pnpm exec nx run @tanstack/ai-grok-build:build
       - name: Add PR head worktree
         env:
           AI_REVIEW_TOKEN: ${{ secrets.AI_REVIEW_TOKEN }}
