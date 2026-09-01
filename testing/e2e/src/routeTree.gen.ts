@@ -18,6 +18,7 @@ import { Route as MiddlewareTestRouteImport } from './routes/middleware-test'
 import { Route as MarkdownCjkRouteImport } from './routes/markdown-cjk'
 import { Route as JoinRunClientToolRouteImport } from './routes/join-run-client-tool'
 import { Route as InterruptsTestRouteImport } from './routes/interrupts-test'
+import { Route as HeadlessUiRouteImport } from './routes/headless-ui'
 import { Route as GenerationPersistenceServerRouteImport } from './routes/generation-persistence-server'
 import { Route as GenerationPersistenceResumeRouteImport } from './routes/generation-persistence-resume'
 import { Route as ForeignInterruptRouteImport } from './routes/foreign-interrupt'
@@ -143,6 +144,11 @@ const JoinRunClientToolRoute = JoinRunClientToolRouteImport.update({
 const InterruptsTestRoute = InterruptsTestRouteImport.update({
   id: '/interrupts-test',
   path: '/interrupts-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HeadlessUiRoute = HeadlessUiRouteImport.update({
+  id: '/headless-ui',
+  path: '/headless-ui',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenerationPersistenceServerRoute =
@@ -584,6 +590,7 @@ export interface FileRoutesByFullPath {
   '/foreign-interrupt': typeof ForeignInterruptRoute
   '/generation-persistence-resume': typeof GenerationPersistenceResumeRoute
   '/generation-persistence-server': typeof GenerationPersistenceServerRoute
+  '/headless-ui': typeof HeadlessUiRoute
   '/interrupts-test': typeof InterruptsTestRoute
   '/join-run-client-tool': typeof JoinRunClientToolRoute
   '/markdown-cjk': typeof MarkdownCjkRoute
@@ -676,6 +683,7 @@ export interface FileRoutesByTo {
   '/foreign-interrupt': typeof ForeignInterruptRoute
   '/generation-persistence-resume': typeof GenerationPersistenceResumeRoute
   '/generation-persistence-server': typeof GenerationPersistenceServerRoute
+  '/headless-ui': typeof HeadlessUiRoute
   '/interrupts-test': typeof InterruptsTestRoute
   '/join-run-client-tool': typeof JoinRunClientToolRoute
   '/markdown-cjk': typeof MarkdownCjkRoute
@@ -769,6 +777,7 @@ export interface FileRoutesById {
   '/foreign-interrupt': typeof ForeignInterruptRoute
   '/generation-persistence-resume': typeof GenerationPersistenceResumeRoute
   '/generation-persistence-server': typeof GenerationPersistenceServerRoute
+  '/headless-ui': typeof HeadlessUiRoute
   '/interrupts-test': typeof InterruptsTestRoute
   '/join-run-client-tool': typeof JoinRunClientToolRoute
   '/markdown-cjk': typeof MarkdownCjkRoute
@@ -863,6 +872,7 @@ export interface FileRouteTypes {
     | '/foreign-interrupt'
     | '/generation-persistence-resume'
     | '/generation-persistence-server'
+    | '/headless-ui'
     | '/interrupts-test'
     | '/join-run-client-tool'
     | '/markdown-cjk'
@@ -955,6 +965,7 @@ export interface FileRouteTypes {
     | '/foreign-interrupt'
     | '/generation-persistence-resume'
     | '/generation-persistence-server'
+    | '/headless-ui'
     | '/interrupts-test'
     | '/join-run-client-tool'
     | '/markdown-cjk'
@@ -1047,6 +1058,7 @@ export interface FileRouteTypes {
     | '/foreign-interrupt'
     | '/generation-persistence-resume'
     | '/generation-persistence-server'
+    | '/headless-ui'
     | '/interrupts-test'
     | '/join-run-client-tool'
     | '/markdown-cjk'
@@ -1140,6 +1152,7 @@ export interface RootRouteChildren {
   ForeignInterruptRoute: typeof ForeignInterruptRoute
   GenerationPersistenceResumeRoute: typeof GenerationPersistenceResumeRoute
   GenerationPersistenceServerRoute: typeof GenerationPersistenceServerRoute
+  HeadlessUiRoute: typeof HeadlessUiRoute
   InterruptsTestRoute: typeof InterruptsTestRoute
   JoinRunClientToolRoute: typeof JoinRunClientToolRoute
   MarkdownCjkRoute: typeof MarkdownCjkRoute
@@ -1277,6 +1290,13 @@ declare module '@tanstack/react-router' {
       path: '/interrupts-test'
       fullPath: '/interrupts-test'
       preLoaderRoute: typeof InterruptsTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/headless-ui': {
+      id: '/headless-ui'
+      path: '/headless-ui'
+      fullPath: '/headless-ui'
+      preLoaderRoute: typeof HeadlessUiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/generation-persistence-server': {
@@ -1921,6 +1941,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForeignInterruptRoute: ForeignInterruptRoute,
   GenerationPersistenceResumeRoute: GenerationPersistenceResumeRoute,
   GenerationPersistenceServerRoute: GenerationPersistenceServerRoute,
+  HeadlessUiRoute: HeadlessUiRoute,
   InterruptsTestRoute: InterruptsTestRoute,
   JoinRunClientToolRoute: JoinRunClientToolRoute,
   MarkdownCjkRoute: MarkdownCjkRoute,
