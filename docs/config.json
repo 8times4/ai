@@ -13,7 +13,7 @@
           "label": "Overview",
           "to": "getting-started/overview",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-09-01"
+          "updatedAt": "2026-09-03"
         },
         {
           "label": "Quick Start",
@@ -118,7 +118,7 @@
           "label": "Streaming UIs",
           "to": "structured-outputs/streaming",
           "addedAt": "2026-05-19",
-          "updatedAt": "2026-08-24"
+          "updatedAt": "2026-09-03"
         },
         {
           "label": "Multi-Turn Chat",
@@ -610,7 +610,7 @@
           "label": "Generation Hooks",
           "to": "media/generation-hooks",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-08-20"
+          "updatedAt": "2026-09-03"
         }
       ],
       "tab": "guides"
@@ -880,7 +880,7 @@
           "label": "Bring Your Own Key",
           "to": "advanced/byok",
           "addedAt": "2026-08-18",
-          "updatedAt": "2026-08-24"
+          "updatedAt": "2026-09-03"
         },
         {
           "label": "Debug Logging",
@@ -1032,6 +1032,11 @@
           "addedAt": "2026-07-29"
         },
         {
+          "label": "Cloudflare",
+          "to": "adapters/cloudflare",
+          "addedAt": "2026-09-03"
+        },
+        {
           "label": "Claude Code",
           "to": "adapters/claude-code",
           "addedAt": "2026-06-12",
@@ -1099,7 +1104,8 @@
         {
           "label": "Cloudflare",
           "to": "community-adapters/cloudflare",
-          "addedAt": "2026-04-15"
+          "addedAt": "2026-04-15",
+          "updatedAt": "2026-09-03"
         },
         {
           "label": "Soniox",
@@ -1155,13 +1161,13 @@
           "label": "@tanstack/ai",
           "to": "api/ai",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-08-21"
+          "updatedAt": "2026-09-03"
         },
         {
           "label": "@tanstack/ai-client",
           "to": "api/ai-client",
           "addedAt": "2026-04-15",
-          "updatedAt": "2026-08-24"
+          "updatedAt": "2026-09-03"
         },
         {
           "label": "@tanstack/ai-react",
